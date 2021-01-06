@@ -1,0 +1,10 @@
+{
+  "name": "WASD in AltSuperTab",
+  "description": "This extensions adds navigation with WASD to the Alt/Super+Tab popup. It also changes Alt+Q to close windows (instead of the entire application), if a window is focused.",
+  "uuid": "wasd-in-altsupertab@leleat-on-github",
+  "shell-version": [
+    "3.36",
+    "3.38"
+  ],
+  "url": "https://github.com/Leleat/Tiling-Assist"
+}
