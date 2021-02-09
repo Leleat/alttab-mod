@@ -1,0 +1,11 @@
+{
+  "description": "Changes: Alt/Super+Tab can now also be navigated with WASD and hjkl, Q just closes the selected item and only the first window will be raised on app activation.",
+  "name": "AltTab mod",
+  "shell-version": [
+    "3.36",
+    "3.38"
+  ],
+  "url": "https://github.com/Leleat/altTab-mod",
+  "uuid": "alttab-mod@leleat-on-github",
+  "version": 1
+}
