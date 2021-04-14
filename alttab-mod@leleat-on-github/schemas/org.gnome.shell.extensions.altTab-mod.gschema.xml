@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+	<schema id="org.gnome.shell.extensions.altTab-mod" path="/org/gnome/shell/extensions/altTab-mod/">
+		<key name="current-workspace-only" type="b">
+			<default>false</default>
+		</key>
+		<key name="current-monitor-only" type="b">
+			<default>false</default>
+		</key>
+		<key name="remove-delay" type="b">
+			<default>false</default>
+		</key>
+	</schema>
+</schemalist>

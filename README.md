@@ -1,6 +1,6 @@
 # AltTab Mod
 
-This extensions adds navigation with `WASD` and `hjkl` to the `Alt/Super`+`Tab` popup. It changes `Alt/Super`+`Q` to close a window (instead of the entire application), if a window is selected/highlighted. If an app is activated, only its first window will be raised (instead of all of them).
+This extension adds navigation with `WASD` and `hjkl` to the `Alt/Super`+`Tab` popup. It changes `Alt/Super`+`Q` to close a window (instead of the entire application), if a window is selected/highlighted. If an app is activated, only its first window will be raised (instead of all of them). Optionally, only show windows from the current workspace or monitor and remove the slight popup delay.
 
 ## Supported GNOME versions
 

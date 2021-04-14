@@ -21,24 +21,44 @@
 "use strict";
 
 const {altTab, main, switcherPopup} = imports.ui;
-const {Clutter, Meta} = imports.gi;
+const {Clutter, Meta, Shell} = imports.gi;
+
+const ExtensionUtils = imports.misc.extensionUtils;
+const Me = ExtensionUtils.getCurrentExtension();
 
 class Extension {
 	constructor() {
 	}
 
 	enable() {
+		this.settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.altTab-mod");
+
+		this.old_keyPressHandler = altTab.AppSwitcherPopup.prototype._keyPressHandler;
 		this.navigationAndUniformQuit();
-		this.raiseFirstWindowOnly();		
+
+		this.old_finish = altTab.AppSwitcherPopup.prototype._finish;
+		this.raiseFirstWindowOnly();
+
+		this.old_appSwitcherInit = altTab.AppSwitcher.prototype._init;
+		this.customAppSwitcherList();
+
+		this.old_delay = switcherPopup.POPUP_DELAY_TIMEOUT;
+		switcherPopup.POPUP_DELAY_TIMEOUT = this.settings.get_boolean("remove-delay") ? 0 : this.old_delay
+		this.settings.connect("changed::remove-delay", () =>
+				switcherPopup.POPUP_DELAY_TIMEOUT = this.settings.get_boolean("remove-delay") ? 0 : this.old_delay);
 	}
 
 	disable() {
 		altTab.AppSwitcherPopup.prototype._keyPressHandler = this.old_keyPressHandler;
 		altTab.AppSwitcherPopup.prototype._finish = this.old_finish;
+		altTab.AppSwitcher.prototype._init = this.old_appSwitcherInit;
+		switcherPopup.POPUP_DELAY_TIMEOUT = this.old_delay;
+
+		this.settings.run_dispose();
+		this.settings = null;
 	}
 
 	navigationAndUniformQuit() {
-		this.old_keyPressHandler = altTab.AppSwitcherPopup.prototype._keyPressHandler;
 		altTab.AppSwitcherPopup.prototype._keyPressHandler =  function(keysym, action) {
 			if (action == Meta.KeyBindingAction.SWITCH_GROUP) {
 				if (!this._thumbnailsFocused)
@@ -80,7 +100,6 @@ class Extension {
 	}
 
 	raiseFirstWindowOnly() {
-		this.old_finish = altTab.AppSwitcherPopup.prototype._finish;
 		altTab.AppSwitcherPopup.prototype._finish =  function(timestamp) {
 			let appIcon = this._items[this._selectedIndex];
 			if (this._currentWindow < 0)
@@ -89,6 +108,40 @@ class Extension {
 				main.activateWindow(appIcon.cachedWindows[this._currentWindow], timestamp);
 
 			switcherPopup.SwitcherPopup.prototype._finish.call(this, timestamp);
+		}
+	}
+
+	customAppSwitcherList() {
+		altTab.AppSwitcher.prototype._init = function(apps, altTabPopup) {
+			switcherPopup.SwitcherList.prototype._init.call(this, true);
+
+			this.icons = [];
+			this._arrows = [];
+
+			const settings = ExtensionUtils.getSettings("org.gnome.shell.extensions.altTab-mod");
+			this.connect("destroy", () => settings.run_dispose());
+			const onlyCurrentMonitor = settings.get_boolean("current-monitor-only");
+			const onlyCurrentWorkspace = settings.get_boolean("current-workspace-only");
+			const workspace = onlyCurrentWorkspace ? global.workspace_manager.get_active_workspace() : null;
+			const allWindows = global.display.get_tab_list(Meta.TabList.NORMAL, workspace);
+			const windowTracker = Shell.WindowTracker.get_default();
+
+			// Construct the AppIcons, add to the popup
+			for (let i = 0; i < apps.length; i++) {
+				let appIcon = new altTab.AppIcon(apps[i]);
+				// Cache the window list now; we don't handle dynamic changes here,
+				// and we don't want to be continually retrieving it
+				appIcon.cachedWindows = allWindows.filter(w => windowTracker.get_window_app(w) === appIcon.app
+						&& (!onlyCurrentMonitor || w.get_monitor() === global.display.get_current_monitor()));
+				if (appIcon.cachedWindows.length > 0)
+					this._addIcon(appIcon);
+			}
+
+			this._curApp = -1;
+			this._altTabPopup = altTabPopup;
+			this._mouseTimeOutId = 0;
+
+			this.connect("destroy", this._onDestroy.bind(this));
 		}
 	}
 }
