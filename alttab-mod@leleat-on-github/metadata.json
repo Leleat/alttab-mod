@@ -3,12 +3,11 @@
   "description": "Alt/Super+Tab can also be navigated with WASD and hjkl. Q just closes the selected item and only the first window will be raised on app activation. Optionally, only show windows from the current workspace or monitor and remove the slight popup delay.",
   "name": "AltTab Mod",
   "shell-version": [
-    "3.36",
-    "3.38",
     "40",
     "41"
   ],
   "url": "https://github.com/Leleat/AltTab-Mod",
   "uuid": "alttab-mod@leleat-on-github",
+  "settings-schema": "org.gnome.shell.extensions.altTab-mod",
   "version": 6
 }

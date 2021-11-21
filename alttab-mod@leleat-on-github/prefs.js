@@ -1,43 +1,54 @@
-"use strict";
+'use strict';
 
-const {Gio, GObject, Gtk} = imports.gi;
+const { Gio, GObject, Gtk } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-const shellVersion = parseFloat(imports.misc.config.PACKAGE_VERSION);
+
+const { ListRow } = Me.imports.src.js.listRow;
 
 function init() {
 }
 
 function buildPrefsWidget() {
-	const prefsWidget = new PrefsWidget();
-	shellVersion < 40 && prefsWidget.show_all();
-	return prefsWidget;
+    return new PrefsWidget();
 }
 
-const PrefsWidget = GObject.registerClass(
-	class AltTabModPrefsWidget extends Gtk.Box {
-		_init(params) {
-			super._init(params);
+const PrefsWidget = GObject.registerClass({
+    GTypeName: 'AltTabModPrefs',
+    Template: Gio.File.new_for_path(`${Me.path}/src/ui/prefs.ui`).get_uri(),
+    InternalChildren: [
+        'current_workspace_only',
+        'current_monitor_only',
+        'remove_delay',
+        'disable_hover_select'
+    ]
+}, class AltTabModPrefs extends Gtk.Box {
+    _init(params) {
+        super._init(params);
 
-			this.builder = new Gtk.Builder();
-			this.builder.add_from_file(Me.path + "/prefs.ui");
+        this._settings = ExtensionUtils.getSettings(Me.metadata['settings-schema']);
+        this.connect('destroy', () => this._settings.run_dispose());
 
-			const mainPrefs = this.builder.get_object("main_prefs");
-			shellVersion < 40 ? this.add(mainPrefs) : this.append(mainPrefs);
+        // Bind settings to GUI
+        this._bindSwitches();
+    }
 
-			const gschema = Gio.SettingsSchemaSource.new_from_directory(Me.dir.get_child("schemas").get_path(), Gio.SettingsSchemaSource.get_default(), false);
-			const settingsSchema = gschema.lookup("org.gnome.shell.extensions.altTab-mod", true);
-			this.settings = new Gio.Settings({settings_schema: settingsSchema});
+    _onListRowActivated(listBox, row) {
+        row.activate();
+    }
 
-			this.bindWidgetsToSettings(settingsSchema.list_keys());
-		}
+    _bindSwitches() {
+        const settings = [
+            'current-workspace-only',
+            'current-monitor-only',
+            'remove-delay',
+            'disable-hover-select'
+        ];
 
-		bindWidgetsToSettings(keys) {
-			keys.forEach(key => {
-				const widget = this.builder.get_object(key);
-				widget && this.settings.bind(key, widget, "active", Gio.SettingsBindFlags.DEFAULT);
-			});
-		}
-	}
-)
+        settings.forEach(key => {
+            const widget = this[`_${key.replaceAll('-', '_')}`];
+            this._settings.bind(key, widget, 'active', Gio.SettingsBindFlags.DEFAULT);
+        });
+    }
+});
