@@ -2,8 +2,8 @@
 
 ## Features
 
-- navigate the App Switcher with `WASD` and `hjkl`
-- `Alt/Super`+`Q` closes a window instead of the entire application
+- use `WASD`, `hjkl` or the arrow keys for navigation
+- `Q` only closes the selected window instead of the entire app
 - only raise the first window instead of every instance
 - optionally: only show windows from the current workspace
 - optionally: only show windows from the current monitor
