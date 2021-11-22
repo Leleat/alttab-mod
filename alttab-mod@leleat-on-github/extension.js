@@ -30,45 +30,128 @@ class Extension {
     enable() {
         this._settings = ExtensionUtils.getSettings(Me.metadata['settings-schema']);
 
-        // WASD and hjkl navigation + Q only quits current window
-        this._old_keyPressHandler = altTab.AppSwitcherPopup.prototype._keyPressHandler;
-        this._navigationAndUniformQuit();
-
-        // Only raise first instance of an app
-        this._old_finish = altTab.AppSwitcherPopup.prototype._finish;
-        this._raiseFirstWindowOnly();
+        this._saveOriginals();
 
         // Include apps from the current workspace or current monitor only
-        this._old_appSwitcherInit = altTab.AppSwitcher.prototype._init;
-        this._customAppSwitcherList();
-
-        // Remove popup delay
-        this._old_delay = switcherPopup.POPUP_DELAY_TIMEOUT;
-        const setDelay = () => {
-            switcherPopup.POPUP_DELAY_TIMEOUT = this._settings.get_boolean('remove-delay')
-                ? 0
-                : this._old_delay;
+        const setCurrentWSorDisplayOnly = () => {
+            if (this._settings.get_boolean('current-workspace-only') ||
+                    this._settings.get_boolean('current-monitor-only'))
+                this._overrideAppSwitcherInit();
+            else
+                altTab.AppSwitcher.prototype._init = this._oldAppSwitcherInit;
         };
-        setDelay();
+        this._settings.connect('changed::current-workspace-only', setCurrentWSorDisplayOnly.bind(this));
+        this._settings.connect('changed::current-monitor-only', setCurrentWSorDisplayOnly.bind(this));
+        setCurrentWSorDisplayOnly();
+
+        // Set App Switcher delay
+        const setDelay = () => {
+            if (this._settings.get_boolean('remove-delay'))
+                this._overrideAppSwitcherPopupDelay();
+            else
+                switcherPopup.POPUP_DELAY_TIMEOUT = this._oldPopupDelay;
+        };
         this._settings.connect('changed::remove-delay', setDelay.bind(this));
+        setDelay();
+
+        // Only raise first instance of an app
+        const setRaiseFirstInstanceOnly = () => {
+            if (this._settings.get_boolean('raise-first-instance-only'))
+                this._overrideAppSwitcherPopupFinish();
+            else
+                altTab.AppSwitcherPopup.prototype._finish = this._oldAppSwitcherPopupFinish;
+        };
+        this._settings.connect('changed::raise-first-instance-only', setRaiseFirstInstanceOnly.bind(this));
+        setRaiseFirstInstanceOnly();
 
         // Set hover selection
-        this._old_itemEnteredHandler = altTab.AppSwitcherPopup.prototype._itemEnteredHandler;
-        this._customHoverSelection();
+        const setAppSwitcherHoverSelection = () => {
+            if (this._settings.get_boolean('disable-hover-select'))
+                this._overrideAppSwitcherItemEnteredHandler();
+            else
+                altTab.AppSwitcherPopup.prototype._itemEnteredHandler = this._oldAppSwitcherPopupItemEnteredHandler;
+        };
+        this._settings.connect('changed::disable-hover-select', setAppSwitcherHoverSelection.bind(this));
+        setAppSwitcherHoverSelection();
+
+        // WASD and hjkl navigation + Q only quits current window
+        this._overrideAppSwitcherPopupKeyPressHandler();
+    }
+
+    _saveOriginals() {
+        this._oldAppSwitcherInit = altTab.AppSwitcher.prototype._init;
+        this._oldPopupDelay = switcherPopup.POPUP_DELAY_TIMEOUT;
+        this._oldAppSwitcherPopupFinish = altTab.AppSwitcherPopup.prototype._finish;
+        this._oldAppSwitcherPopupItemEnteredHandler = altTab.AppSwitcherPopup.prototype._itemEnteredHandler;
+        this._oldAppSwitcherPopupKeyPressHandler = altTab.AppSwitcherPopup.prototype._keyPressHandler;
     }
 
     disable() {
-        altTab.AppSwitcherPopup.prototype._keyPressHandler = this._old_keyPressHandler;
-        altTab.AppSwitcherPopup.prototype._finish = this._old_finish;
-        altTab.AppSwitcher.prototype._init = this._old_appSwitcherInit;
-        switcherPopup.POPUP_DELAY_TIMEOUT = this._old_delay;
-        altTab.AppSwitcherPopup.prototype._itemEnteredHandler = this._old_itemEnteredHandler;
+        altTab.AppSwitcher.prototype._init = this._oldAppSwitcherInit;
+        switcherPopup.POPUP_DELAY_TIMEOUT = this._oldPopupDelay;
+        altTab.AppSwitcherPopup.prototype._finish = this._oldAppSwitcherPopupFinish;
+        altTab.AppSwitcherPopup.prototype._itemEnteredHandler = this._oldAppSwitcherPopupItemEnteredHandler;
+        altTab.AppSwitcherPopup.prototype._keyPressHandler = this._oldAppSwitcherPopupKeyPressHandler;
 
         this._settings.run_dispose();
         this._settings = null;
     }
 
-    _navigationAndUniformQuit() {
+    _overrideAppSwitcherInit() {
+        altTab.AppSwitcher.prototype._init = function (apps, altTabPopup) {
+            switcherPopup.SwitcherList.prototype._init.call(this, true);
+
+            this.icons = [];
+            this._arrows = [];
+
+            const settings = ExtensionUtils.getSettings(Me.metadata['settings-schema']);
+            this.connect('destroy', () => settings.run_dispose());
+            const onlyCurrentMonitor = settings.get_boolean('current-monitor-only');
+            const onlyCurrentWorkspace = settings.get_boolean('current-workspace-only');
+            const workspace = onlyCurrentWorkspace ? global.workspace_manager.get_active_workspace() : null;
+            const allWindows = global.display.get_tab_list(Meta.TabList.NORMAL, workspace);
+            const windowTracker = Shell.WindowTracker.get_default();
+
+            // Construct the AppIcons, add to the popup
+            for (let i = 0; i < apps.length; i++) {
+                let appIcon = new altTab.AppIcon(apps[i]);
+                // Cache the window list now; we don't handle dynamic changes here,
+                // and we don't want to be continually retrieving it
+                appIcon.cachedWindows = allWindows.filter(w => windowTracker.get_window_app(w) === appIcon.app &&
+                        (!onlyCurrentMonitor || w.get_monitor() === global.display.get_current_monitor()));
+                if (appIcon.cachedWindows.length > 0)
+                    this._addIcon(appIcon);
+            }
+
+            this._curApp = -1;
+            this._altTabPopup = altTabPopup;
+            this._mouseTimeOutId = 0;
+
+            this.connect('destroy', this._onDestroy.bind(this));
+        };
+    }
+
+    _overrideAppSwitcherPopupDelay() {
+        switcherPopup.POPUP_DELAY_TIMEOUT = 0;
+    }
+
+    _overrideAppSwitcherPopupFinish() {
+        altTab.AppSwitcherPopup.prototype._finish = function (timestamp) {
+            const appIcon = this._items[this._selectedIndex];
+            if (this._currentWindow < 0)
+                main.activateWindow(appIcon.cachedWindows[0], timestamp);
+            else if (appIcon.cachedWindows[this._currentWindow])
+                main.activateWindow(appIcon.cachedWindows[this._currentWindow], timestamp);
+
+            switcherPopup.SwitcherPopup.prototype._finish.call(this, timestamp);
+        };
+    }
+
+    _overrideAppSwitcherItemEnteredHandler() {
+        altTab.AppSwitcherPopup.prototype._itemEnteredHandler = () => {};
+    }
+
+    _overrideAppSwitcherPopupKeyPressHandler() {
         altTab.AppSwitcherPopup.prototype._keyPressHandler = function (keysym, action) {
             if (action === Meta.KeyBindingAction.SWITCH_GROUP) {
                 if (!this._thumbnailsFocused)
@@ -105,64 +188,6 @@ class Extension {
             }
 
             return Clutter.EVENT_STOP;
-        };
-    }
-
-    _raiseFirstWindowOnly() {
-        altTab.AppSwitcherPopup.prototype._finish = function (timestamp) {
-            let appIcon = this._items[this._selectedIndex];
-            if (this._currentWindow < 0)
-                main.activateWindow(appIcon.cachedWindows[0], timestamp);
-            else if (appIcon.cachedWindows[this._currentWindow])
-                main.activateWindow(appIcon.cachedWindows[this._currentWindow], timestamp);
-
-            switcherPopup.SwitcherPopup.prototype._finish.call(this, timestamp);
-        };
-    }
-
-    _customAppSwitcherList() {
-        altTab.AppSwitcher.prototype._init = function (apps, altTabPopup) {
-            switcherPopup.SwitcherList.prototype._init.call(this, true);
-
-            this.icons = [];
-            this._arrows = [];
-
-            const settings = ExtensionUtils.getSettings(Me.metadata['settings-schema']);
-            this.connect('destroy', () => settings.run_dispose());
-            const onlyCurrentMonitor = settings.get_boolean('current-monitor-only');
-            const onlyCurrentWorkspace = settings.get_boolean('current-workspace-only');
-            const workspace = onlyCurrentWorkspace ? global.workspace_manager.get_active_workspace() : null;
-            const allWindows = global.display.get_tab_list(Meta.TabList.NORMAL, workspace);
-            const windowTracker = Shell.WindowTracker.get_default();
-
-            // Construct the AppIcons, add to the popup
-            for (let i = 0; i < apps.length; i++) {
-                let appIcon = new altTab.AppIcon(apps[i]);
-                // Cache the window list now; we don't handle dynamic changes here,
-                // and we don't want to be continually retrieving it
-                appIcon.cachedWindows = allWindows.filter(w => windowTracker.get_window_app(w) === appIcon.app &&
-                        (!onlyCurrentMonitor || w.get_monitor() === global.display.get_current_monitor()));
-                if (appIcon.cachedWindows.length > 0)
-                    this._addIcon(appIcon);
-            }
-
-            this._curApp = -1;
-            this._altTabPopup = altTabPopup;
-            this._mouseTimeOutId = 0;
-
-            this.connect('destroy', this._onDestroy.bind(this));
-        };
-    }
-
-    _customHoverSelection() {
-        altTab.AppSwitcherPopup.prototype._itemEnteredHandler = function (n) {
-            const settings = ExtensionUtils.getSettings(Me.metadata['settings-schema']);
-            this.connect('destroy', () => settings.run_dispose());
-
-            if (settings.get_boolean('disable-hover-select'))
-                return;
-
-            this._select(n);
         };
     }
 }

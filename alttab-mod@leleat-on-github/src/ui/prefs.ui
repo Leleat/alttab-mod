@@ -73,6 +73,21 @@
             </property>
           </object>
         </child>
+        <child>
+          <object class="AltTabModListRow">
+            <property name="title">Raise First Instance Only</property>
+            <property name="subtitle">If an app is activated, instead of raising all instances of the app, only the last window will be activated.</property>
+            <property name="suffix">
+              <object class="GtkSwitch" id="raise_first_instance_only">
+                <property name="can-focus">True</property>
+                <property name="halign">end</property>
+                <property name="valign">center</property>
+                <property name="hexpand">True</property>
+                <property name="active">True</property>
+              </object>
+            </property>
+          </object>
+        </child>
       </object>
     </child>
   </template>

@@ -21,7 +21,8 @@ const PrefsWidget = GObject.registerClass({
         'current_workspace_only',
         'current_monitor_only',
         'remove_delay',
-        'disable_hover_select'
+        'disable_hover_select',
+        'raise_first_instance_only'
     ]
 }, class AltTabModPrefs extends Gtk.Box {
     _init(params) {
@@ -43,7 +44,8 @@ const PrefsWidget = GObject.registerClass({
             'current-workspace-only',
             'current-monitor-only',
             'remove-delay',
-            'disable-hover-select'
+            'disable-hover-select',
+            'raise-first-instance-only'
         ];
 
         settings.forEach(key => {

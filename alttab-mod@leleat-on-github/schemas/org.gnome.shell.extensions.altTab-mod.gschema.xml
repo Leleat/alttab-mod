@@ -10,6 +10,9 @@
 		<key name="remove-delay" type="b">
 			<default>false</default>
 		</key>
+		<key name="raise-first-instance-only" type="b">
+			<default>true</default>
+		</key>
 		<key name="disable-hover-select" type="b">
 			<default>false</default>
 		</key>
