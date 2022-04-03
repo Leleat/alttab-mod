@@ -4,7 +4,8 @@
   "name": "AltTab Mod",
   "shell-version": [
     "40",
-    "41"
+    "41",
+    "42"
   ],
   "url": "https://github.com/Leleat/AltTab-Mod",
   "uuid": "alttab-mod@leleat-on-github",
