@@ -11,8 +11,7 @@
 
 ## Supported GNOME versions
 
-- 40
-- 41
+- 42
 
 ## Installation
 

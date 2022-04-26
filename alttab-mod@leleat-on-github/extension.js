@@ -123,7 +123,7 @@ class Extension {
                     this._addIcon(appIcon);
             }
 
-            this._curApp = -1;
+            this._delayedHighlighted = -1;
             this._altTabPopup = altTabPopup;
             this._mouseTimeOutId = 0;
 
