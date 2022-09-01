@@ -8,6 +8,5 @@
   ],
   "url": "https://github.com/Leleat/AltTab-Mod",
   "uuid": "alttab-mod@leleat-on-github",
-  "settings-schema": "org.gnome.shell.extensions.altTab-mod",
-  "version": 7
+  "settings-schema": "org.gnome.shell.extensions.altTab-mod"
 }
