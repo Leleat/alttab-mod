@@ -44,6 +44,9 @@ class Extension {
         this._settings.connect('changed::current-monitor-only', setCurrentWSorDisplayOnly.bind(this));
         setCurrentWSorDisplayOnly();
 
+        // Maybe include windows from current monitor only
+        this._overrideWindowSwitcherPopupGetWindowList();
+
         // Set App Switcher delay
         const setDelay = () => {
             if (this._settings.get_boolean('remove-delay'))
@@ -66,16 +69,20 @@ class Extension {
 
         // Set hover selection
         const setAppSwitcherHoverSelection = () => {
-            if (this._settings.get_boolean('disable-hover-select'))
+            if (this._settings.get_boolean('disable-hover-select')) {
                 this._overrideAppSwitcherItemEnteredHandler();
-            else
+                this._overrideWindowSwitcherItemEnteredHandler();
+            } else {
                 altTab.AppSwitcherPopup.prototype._itemEnteredHandler = this._oldAppSwitcherPopupItemEnteredHandler;
+                altTab.WindowSwitcherPopup.prototype._itemEnteredHandler = this._oldWindowSwitcherPopupItemEnteredHandler;
+            }
         };
         this._settings.connect('changed::disable-hover-select', setAppSwitcherHoverSelection.bind(this));
         setAppSwitcherHoverSelection();
 
         // WASD and hjkl navigation + Q only quits current window
         this._overrideAppSwitcherPopupKeyPressHandler();
+        this._overrideWindowSwitcherPopupKeyPressHandler();
     }
 
     _saveOriginals() {
@@ -84,6 +91,10 @@ class Extension {
         this._oldAppSwitcherPopupFinish = altTab.AppSwitcherPopup.prototype._finish;
         this._oldAppSwitcherPopupItemEnteredHandler = altTab.AppSwitcherPopup.prototype._itemEnteredHandler;
         this._oldAppSwitcherPopupKeyPressHandler = altTab.AppSwitcherPopup.prototype._keyPressHandler;
+
+        this._oldWindowSwitcherPopupItemEnteredHandler = altTab.WindowSwitcherPopup.prototype._itemEnteredHandler;
+        this._oldWindowSwitcherPopupKeyPressHandler = altTab.WindowSwitcherPopup.prototype._keyPressHandler;
+        this._oldWindowSwitcherPopupGetWindowList = altTab.WindowSwitcherPopup.prototype._getWindowList;
     }
 
     disable() {
@@ -93,7 +104,10 @@ class Extension {
         altTab.AppSwitcherPopup.prototype._itemEnteredHandler = this._oldAppSwitcherPopupItemEnteredHandler;
         altTab.AppSwitcherPopup.prototype._keyPressHandler = this._oldAppSwitcherPopupKeyPressHandler;
 
-        this._settings.run_dispose();
+        altTab.WindowSwitcherPopup.prototype._itemEnteredHandler = this._oldWindowSwitcherPopupItemEnteredHandler;
+        altTab.WindowSwitcherPopup.prototype._keyPressHandler = this._oldWindowSwitcherPopupKeyPressHandler;
+        altTab.WindowSwitcherPopup.prototype._getWindowList = this._oldWindowSwitcherPopupGetWindowList;
+
         this._settings = null;
     }
 
@@ -105,7 +119,6 @@ class Extension {
             this._arrows = [];
 
             const settings = ExtensionUtils.getSettings(Me.metadata['settings-schema']);
-            this.connect('destroy', () => settings.run_dispose());
             const onlyCurrentMonitor = settings.get_boolean('current-monitor-only');
             const onlyCurrentWorkspace = settings.get_boolean('current-workspace-only');
             const workspace = onlyCurrentWorkspace ? global.workspace_manager.get_active_workspace() : null;
@@ -151,6 +164,10 @@ class Extension {
         altTab.AppSwitcherPopup.prototype._itemEnteredHandler = () => {};
     }
 
+    _overrideWindowSwitcherItemEnteredHandler() {
+        altTab.WindowSwitcherPopup.prototype._itemEnteredHandler = () => {};
+    }
+
     _overrideAppSwitcherPopupKeyPressHandler() {
         altTab.AppSwitcherPopup.prototype._keyPressHandler = function (keysym, action) {
             if (action === Meta.KeyBindingAction.SWITCH_GROUP) {
@@ -189,6 +206,43 @@ class Extension {
 
             return Clutter.EVENT_STOP;
         };
+    }
+
+    _overrideWindowSwitcherPopupKeyPressHandler() {
+        altTab.WindowSwitcherPopup.prototype._keyPressHandler = function (keysym, action) {
+            const rtl = Clutter.get_default_text_direction() === Clutter.TextDirection.RTL;
+
+            if (action == Meta.KeyBindingAction.SWITCH_WINDOWS)
+                this._select(this._next());
+            else if (action == Meta.KeyBindingAction.SWITCH_WINDOWS_BACKWARD)
+                this._select(this._previous());
+            else if (keysym == Clutter.KEY_Left || keysym === Clutter.KEY_a || keysym === Clutter.KEY_A || keysym === Clutter.KEY_h || keysym === Clutter.KEY_H)
+                this._select(rtl ? this._next() : this._previous());
+            else if (keysym == Clutter.KEY_Right || keysym === Clutter.KEY_d || keysym === Clutter.KEY_D || keysym === Clutter.KEY_l || keysym === Clutter.KEY_L)
+                this._select(rtl ? this._previous() : this._next());
+            else if (keysym === Clutter.KEY_w || keysym === Clutter.KEY_W || keysym === Clutter.KEY_F4 || keysym === Clutter.KEY_q || keysym === Clutter.KEY_Q)
+                this._closeWindow(this._selectedIndex);
+            else
+                return Clutter.EVENT_PROPAGATE;
+
+            return Clutter.EVENT_STOP;
+        }
+    }
+
+    _overrideWindowSwitcherPopupGetWindowList() {
+        const settings = ExtensionUtils.getSettings(Me.metadata['settings-schema']);
+
+        altTab.WindowSwitcherPopup.prototype._getWindowList = function () {
+            const workspace = settings.get_boolean('current-workspace-only')
+                ? global.workspace_manager.get_active_workspace()
+                : null;
+            const monitor = global.display.get_current_monitor();
+            const windows = settings.get_boolean('current-monitor-only')
+                ? altTab.getWindows(workspace).filter(w => w.get_monitor() === monitor)
+                : altTab.getWindows(workspace);
+
+            return windows;
+        }
     }
 }
 
