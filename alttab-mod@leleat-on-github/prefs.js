@@ -20,6 +20,8 @@ const PrefsWidget = GObject.registerClass({
     InternalChildren: [
         'current_workspace_only',
         'current_monitor_only',
+        'current_workspace_only_window',
+        'current_monitor_only_window',
         'remove_delay',
         'disable_hover_select',
         'raise_first_instance_only'
@@ -43,6 +45,8 @@ const PrefsWidget = GObject.registerClass({
         const settings = [
             'current-workspace-only',
             'current-monitor-only',
+            'current-workspace-only-window',
+            'current-monitor-only-window',
             'remove-delay',
             'disable-hover-select',
             'raise-first-instance-only'

@@ -23,24 +23,52 @@
         </style>
         <child>
           <object class="AltTabModListRow">
-            <property name="title">Include apps from the current workspace only</property>
+            <property name="title">App Switcher: Include apps from the current workspace only</property>
             <property name="suffix">
               <object class="GtkSwitch" id="current_workspace_only">
                 <property name="can-focus">True</property>
                 <property name="halign">end</property>
                 <property name="hexpand">True</property>
+                <property name="valign">center</property>
               </object>
             </property>
           </object>
         </child>
         <child>
           <object class="AltTabModListRow">
-            <property name="title">Include apps from the current monitor only</property>
+            <property name="title">App Switcher: Include apps from the current monitor only</property>
             <property name="suffix">
               <object class="GtkSwitch" id="current_monitor_only">
                 <property name="can-focus">True</property>
                 <property name="halign">end</property>
                 <property name="hexpand">True</property>
+                <property name="valign">center</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="AltTabModListRow">
+            <property name="title">Window Switcher: Include apps from the current workspace only</property>
+            <property name="suffix">
+              <object class="GtkSwitch" id="current_workspace_only_window">
+                <property name="can-focus">True</property>
+                <property name="halign">end</property>
+                <property name="hexpand">True</property>
+                <property name="valign">center</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="AltTabModListRow">
+            <property name="title">Window Switcher: Include apps from the current monitor only</property>
+            <property name="suffix">
+              <object class="GtkSwitch" id="current_monitor_only_window">
+                <property name="can-focus">True</property>
+                <property name="halign">end</property>
+                <property name="hexpand">True</property>
+                <property name="valign">center</property>
               </object>
             </property>
           </object>

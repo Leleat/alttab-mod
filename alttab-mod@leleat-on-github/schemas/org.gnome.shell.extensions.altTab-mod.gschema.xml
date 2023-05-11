@@ -7,6 +7,12 @@
 		<key name="current-monitor-only" type="b">
 			<default>false</default>
 		</key>
+		<key name="current-workspace-only-window" type="b">
+			<default>false</default>
+		</key>
+		<key name="current-monitor-only-window" type="b">
+			<default>false</default>
+		</key>
 		<key name="remove-delay" type="b">
 			<default>false</default>
 		</key>

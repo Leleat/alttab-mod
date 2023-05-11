@@ -233,11 +233,11 @@ class Extension {
         const settings = ExtensionUtils.getSettings(Me.metadata['settings-schema']);
 
         altTab.WindowSwitcherPopup.prototype._getWindowList = function () {
-            const workspace = settings.get_boolean('current-workspace-only')
+            const workspace = settings.get_boolean('current-workspace-only-window')
                 ? global.workspace_manager.get_active_workspace()
                 : null;
             const monitor = global.display.get_current_monitor();
-            const windows = settings.get_boolean('current-monitor-only')
+            const windows = settings.get_boolean('current-monitor-only-window')
                 ? altTab.getWindows(workspace).filter(w => w.get_monitor() === monitor)
                 : altTab.getWindows(workspace);
 
