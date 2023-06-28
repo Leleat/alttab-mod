@@ -67,6 +67,16 @@ class Extension {
         this._settings.connect('changed::raise-first-instance-only', setRaiseFirstInstanceOnly.bind(this));
         setRaiseFirstInstanceOnly();
 
+        // Set focus window on select
+        const setFocusOnSelectWindow = () => {
+            if (this._settings.get_boolean('focus-on-select-window'))
+                this._overrideWindowSwitcherPopupSelect();
+            else
+                altTab.WindowSwitcherPopup.prototype._select = this._oldWindowSwitcherPopupSelect
+        };
+        this._settings.connect('changed::focus-on-select-window', setFocusOnSelectWindow.bind(this));
+        setFocusOnSelectWindow();
+
         // Set hover selection
         const setAppSwitcherHoverSelection = () => {
             if (this._settings.get_boolean('disable-hover-select')) {
@@ -92,6 +102,7 @@ class Extension {
         this._oldAppSwitcherPopupItemEnteredHandler = altTab.AppSwitcherPopup.prototype._itemEnteredHandler;
         this._oldAppSwitcherPopupKeyPressHandler = altTab.AppSwitcherPopup.prototype._keyPressHandler;
 
+        this._oldWindowSwitcherPopupSelect = altTab.WindowSwitcherPopup.prototype._select;
         this._oldWindowSwitcherPopupItemEnteredHandler = altTab.WindowSwitcherPopup.prototype._itemEnteredHandler;
         this._oldWindowSwitcherPopupKeyPressHandler = altTab.WindowSwitcherPopup.prototype._keyPressHandler;
         this._oldWindowSwitcherPopupGetWindowList = altTab.WindowSwitcherPopup.prototype._getWindowList;
@@ -157,6 +168,14 @@ class Extension {
                 main.activateWindow(appIcon.cachedWindows[this._currentWindow], timestamp);
 
             switcherPopup.SwitcherPopup.prototype._finish.call(this, timestamp);
+        };
+    }
+
+    _overrideWindowSwitcherPopupSelect() {
+        altTab.WindowSwitcherPopup.prototype._select = function(num) {
+            this._selectedIndex = num;
+            this._switcherList.highlight(num);
+            main.activateWindow(this._items[this._selectedIndex].window);
         };
     }
 

@@ -75,6 +75,19 @@
         </child>
         <child>
           <object class="AltTabModListRow">
+            <property name="title">Window Switcher: Focus window on select</property>
+            <property name="suffix">
+              <object class="GtkSwitch" id="focus_on_select_window">
+                <property name="can-focus">True</property>
+                <property name="halign">end</property>
+                <property name="hexpand">True</property>
+                <property name="valign">center</property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="AltTabModListRow">
             <property name="title">Remove Popup Delay</property>
             <property name="subtitle">This delay ist meant to prevent the brief flashing of the app switcher popup when &lt;b&gt;quickly&lt;/b&gt; switching between the 2 most recent windows.</property>
             <property name="suffix">

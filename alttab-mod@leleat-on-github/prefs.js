@@ -22,6 +22,7 @@ const PrefsWidget = GObject.registerClass({
         'current_monitor_only',
         'current_workspace_only_window',
         'current_monitor_only_window',
+        'focus_on_select_window',
         'remove_delay',
         'disable_hover_select',
         'raise_first_instance_only'
@@ -47,6 +48,7 @@ const PrefsWidget = GObject.registerClass({
             'current-monitor-only',
             'current-workspace-only-window',
             'current-monitor-only-window',
+            'focus-on-select-window',
             'remove-delay',
             'disable-hover-select',
             'raise-first-instance-only'
