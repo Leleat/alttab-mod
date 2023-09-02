@@ -2,4 +2,5 @@ locale/
 gschemas.compiled
 *.zip
 *~
-TODO.txt
+TODO.*
+node_modules/

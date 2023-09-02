@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface domain="alttab-mod@leleat-on-github">
+  <object class="AdwPreferencesPage" id="preference-page">
+    <child>
+      <object class="AdwPreferencesGroup">
+        <child>
+          <object class="AdwSwitchRow" id="raise-first-instance-only">
+            <property name="title">AppSwitcher: Raise First Instance Only</property>
+            <property name="subtitle">If an app is activated, instead of raising all instances of the app, only the last window will be activated.</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="current-workspace-only">
+            <property name="title">App Switcher: Include apps from the current workspace only</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="current-monitor-only">
+            <property name="title">App Switcher: Include apps from the current monitor only</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="current-workspace-only-window">
+            <property name="title">Window Switcher: Include windows from the current workspace only</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="current-monitor-only-window">
+            <property name="title">Window Switcher: Include windows from the current monitor only</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="focus-on-select-window">
+            <property name="title">Window Switcher: Focus window on select</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="remove-delay">
+            <property name="title">Remove Popup Delay</property>
+            <property name="subtitle">This delay ist meant to prevent the brief flashing of the app switcher popup when &lt;b&gt;quickly&lt;/b&gt; switching between the 2 most recent windows.</property>
+          </object>
+        </child>
+        <child>
+          <object class="AdwSwitchRow" id="disable-hover-select">
+            <property name="title">Disable Hover Selection</property>
+            <property name="subtitle">Hovering an icon with your pointer no longer changes the selection.</property>
+          </object>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

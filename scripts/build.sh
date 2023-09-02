@@ -11,7 +11,7 @@ cd $SCRIPT_DIR/../
 echo Packaging extension...
 gnome-extensions pack alttab-mod@leleat-on-github \
     --force \
-    --extra-source="src"
+    --extra-source="prefs.ui"
 echo Packaging complete.
 echo
 

@@ -1,0 +1,16 @@
+{
+    "name": "alttab-mod",
+    "version": "1.0.0",
+    "description": "A GNOME extension to add QoL changes to the App and Window Switcher",
+    "main": "alttab-mod@leleat-on-github/extension.js",
+    "scripts": {},
+    "keywords": [],
+    "author": "Leleat",
+    "license": "GPL-2.0-or-later",
+    "devDependencies": {
+        "eslint": "latest",
+        "eslint-config-prettier": "^8.8.0",
+        "prettier": "^2.8.8"
+    },
+    "type": "module"
+}
