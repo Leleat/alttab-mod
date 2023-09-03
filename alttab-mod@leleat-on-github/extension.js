@@ -64,6 +64,7 @@ export default class AltTabModExtension extends Extension {
 
         this._injectionManager = new InjectionManager();
 
+        const that = this;
         const appSwitcherPopupInstance = new AltTab.AppSwitcherPopup();
         const AppSwitcherListPrototype =
             appSwitcherPopupInstance._switcherList.constructor.prototype;
@@ -502,6 +503,7 @@ export default class AltTabModExtension extends Extension {
                         settings.get_boolean('remove-delay') ? 0 : 150,
                         () => {
                             this._showImmediately();
+                            that._timer = 0;
                             return GLib.SOURCE_REMOVE;
                         }
                     );
@@ -509,6 +511,18 @@ export default class AltTabModExtension extends Extension {
                         this._initialDelayTimeoutId,
                         '[gnome-shell] Main.osdWindow.cancel'
                     );
+
+                    that._timer = this._initialDelayTimeoutId;
+                    that._switcherPopup = this;
+                    this.connect('destroy', () => {
+                        that._switcherPopup = null;
+
+                        if (that._timer) {
+                            GLib.source_remove(that._timer);
+                            that._timer = 0;
+                        }
+                    });
+
                     return true;
                 };
             }
@@ -518,6 +532,15 @@ export default class AltTabModExtension extends Extension {
     disable() {
         this._injectionManager.clear();
         this._injectionManager = null;
+
+        // Also removes all timers etc.
+        this._switcherPopup?.destroy();
+        this._switcherPopup = null;
+
+        if (this._timer) {
+            GLib.source_remove(this._timer);
+            this._timer = 0;
+        }
     }
 
     _watchAndApplySettings(settings, keys, fn) {
