@@ -8,10 +8,12 @@
 - optionally: only show windows from the current workspace
 - optionally: only show windows from the current monitor
 - optionally: remove the App Switcher's delayed appearance
+- optionally: raise windows during navigation with the Window Switcher
 
 ## Supported GNOME versions
 
-- 42
+- 42-44
+- 45
 
 ## Installation
 
