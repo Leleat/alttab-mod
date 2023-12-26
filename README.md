@@ -12,7 +12,7 @@
 
 ## Supported GNOME versions
 
-- 42-44
+- 40-44
 - 45
 
 ## Installation
