@@ -459,7 +459,7 @@ export default class AltTabModExtension extends Extension {
                     this._haveModal = true;
                     this._modifierMask = primaryModifier(mask);
 
-                    this.add_actor(this._switcherList);
+                    this.add_child(this._switcherList);
                     this._switcherList.connect(
                         'item-activated',
                         this._itemActivated.bind(this)
