@@ -12,8 +12,7 @@
 
 ## Supported GNOME versions
 
-- 40-44
-- 45
+This extension works on GNOME Shell 3.36+. The [metadata](https://github.com/Leleat/AltTab-Mod/blob/master/alttab-mod%40leleat-on-github/metadata.json#L5) file lists all _currently_ supported GNOME Shell versions. Generally, only the most recent GNOME Shell is supported. That means older releases may not include all features and bug fixes.
 
 ## Installation
 
