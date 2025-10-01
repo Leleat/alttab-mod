@@ -3,7 +3,7 @@
   "description": "Add some QoL changes to the App Switcher (Alt/Super+Tab)...\n- use `WASD`, `hjkl` or the arrow keys for navigation\n- `Q` only closes the selected window instead of the entire app\n- only raise the first window instead of every instance\n- optionally: only show windows from the current workspace\n- optionally: only show windows from the current monitor\n- optionally: remove the App Switcher's delayed appearance",
   "name": "AltTab Mod",
   "shell-version": [
-    "46", "47", "48"
+    "46", "47", "48", "49"
   ],
   "url": "https://github.com/Leleat/AltTab-Mod",
   "uuid": "alttab-mod@leleat-on-github",
